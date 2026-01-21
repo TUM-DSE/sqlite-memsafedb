@@ -16,6 +16,12 @@
 */
 #include "sqliteInt.h"
 
+#ifdef MTE
+#include <stdatomic.h>
+#include <stdbool.h>
+#include <mte.h>
+#endif
+
 #ifdef SQLITE_ENABLE_FTS3
 # include "fts3.h"
 #endif
@@ -192,6 +198,15 @@ int sqlite3_initialize(void){
   int rc;                                      /* Result code */
 #ifdef SQLITE_EXTRA_INIT
   int bRunExtraInit = 0;                       /* Extra initialization needed */
+#endif
+
+#ifdef MTE
+  {
+    static atomic_bool mte_initialized = ATOMIC_VAR_INIT(false);
+    if(!atomic_exchange_explicit(&mte_initialized, true, memory_order_acq_rel)) {
+      init_process(MTE_MODE_SYNC);
+    }
+  }
 #endif
 
 #ifdef SQLITE_OMIT_WSD

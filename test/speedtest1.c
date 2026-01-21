@@ -2965,9 +2965,6 @@ static int xCompileOptions(void *pCtx, int nVal, char **azVal, char **azCol){
   return SQLITE_OK;
 }
 int main(int argc, char **argv){
-#ifdef MTE
-  init_process(MTE_MODE_SYNC);
-#endif
   int doAutovac = 0;            /* True for --autovacuum */
   int cacheSize = 0;            /* Desired cache size.  0 means default */
   int doExclusive = 0;          /* True for --exclusive */
