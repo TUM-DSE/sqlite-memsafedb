@@ -1044,8 +1044,12 @@ typedef INT16_TYPE LogEst;
 ** pointers in size, and so it is a no-op on systems where the pointer
 ** size is 8.
 */
-#define ROUND8(x)     (((x)+7)&~7)
-#if SQLITE_PTRSIZE==8
+#if SQLITE_PTRSIZE==16
+# define ROUND8(x)     (((x)+15)&~15)
+#else
+# define ROUND8(x)     (((x)+7)&~7)
+#endif
+#if SQLITE_PTRSIZE==8 || SQLITE_PTRSIZE==16
 # define ROUND8P(x)   (x)
 #else
 # define ROUND8P(x)   (((x)+7)&~7)
@@ -1067,6 +1071,8 @@ typedef INT16_TYPE LogEst;
 */
 #ifdef SQLITE_4_BYTE_ALIGNED_MALLOC
 # define EIGHT_BYTE_ALIGNMENT(X)   ((((uptr)(X) - (uptr)0)&3)==0)
+#elif SQLITE_PTRSIZE==16
+# define EIGHT_BYTE_ALIGNMENT(X)   ((((uptr)(X) - (uptr)0)&15)==0)
 #else
 # define EIGHT_BYTE_ALIGNMENT(X)   ((((uptr)(X) - (uptr)0)&7)==0)
 #endif

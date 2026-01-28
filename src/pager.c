@@ -4866,6 +4866,7 @@ int sqlite3PagerOpen(
   ** specific formatting and order of the various filenames, so if the format
   ** changes here, be sure to change it there as well.
   */
+  assert( SQLITE_PTRSIZE== 16);
   assert( SQLITE_PTRSIZE==sizeof(Pager*) );
   pPtr = (u8 *)sqlite3MallocZero(
     ROUND8(sizeof(*pPager)) +            /* Pager structure */

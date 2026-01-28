@@ -144,7 +144,7 @@ struct VdbeCursor {
 ** of 8.
 */
 #define SZ_VDBECURSOR(N) \
-    (ROUND8(offsetof(VdbeCursor,aType)) + ((N)+1)*sizeof(u64))
+    ROUND8(ROUND8(offsetof(VdbeCursor,aType)) + ((N)+1)*sizeof(u64))
 
 /* Return true if P is a null-only cursor
 */

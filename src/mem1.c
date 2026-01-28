@@ -139,11 +139,19 @@ static void *sqlite3MemMalloc(int nByte){
   sqlite3_int64 *p;
   assert( nByte>0 );
   testcase( ROUND8(nByte)!=nByte );
+#if SQLITE_PTRSIZE==16
+  p = SQLITE_MALLOC( nByte+16 );
+  if( p ){
+    p[0] = nByte;
+    p = (sqlite3_int64*)((char*)p + 16);
+  }else{
+#else
   p = SQLITE_MALLOC( nByte+8 );
   if( p ){
     p[0] = nByte;
     p++;
   }else{
+#endif
     testcase( sqlite3GlobalConfig.xLog!=0 );
     sqlite3_log(SQLITE_NOMEM, "failed to allocate %u bytes of memory", nByte);
   }
@@ -165,7 +173,11 @@ static void sqlite3MemFree(void *pPrior){
 #else
   sqlite3_int64 *p = (sqlite3_int64*)pPrior;
   assert( pPrior!=0 );
+#if SQLITE_PTRSIZE==16
+  p = (sqlite3_int64*)((char*)p - 16);
+#else
   p--;
+#endif
   SQLITE_FREE(p);
 #endif
 }
@@ -182,7 +194,11 @@ static int sqlite3MemSize(void *pPrior){
   sqlite3_int64 *p;
   assert( pPrior!=0 );
   p = (sqlite3_int64*)pPrior;
+#if SQLITE_PTRSIZE==16
+  p = (sqlite3_int64*)((char*)p - 16);
+#else
   p--;
+#endif
   return (int)p[0];
 #endif
 }
@@ -211,12 +227,21 @@ static void *sqlite3MemRealloc(void *pPrior, int nByte){
   sqlite3_int64 *p = (sqlite3_int64*)pPrior;
   assert( pPrior!=0 && nByte>0 );
   assert( nByte==ROUND8(nByte) ); /* EV: R-46199-30249 */
+#if SQLITE_PTRSIZE==16
+  p = (sqlite3_int64*)((char*)p - 16);
+  p = SQLITE_REALLOC(p, nByte+16 );
+  if( p ){
+    p[0] = nByte;
+    p = (sqlite3_int64*)((char*)p + 16);
+  }else{
+#else
   p--;
   p = SQLITE_REALLOC(p, nByte+8 );
   if( p ){
     p[0] = nByte;
     p++;
   }else{
+#endif
     testcase( sqlite3GlobalConfig.xLog!=0 );
     sqlite3_log(SQLITE_NOMEM,
       "failed memory resize %u to %u bytes",
